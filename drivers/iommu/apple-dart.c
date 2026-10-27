@@ -367,16 +367,19 @@ static u32 apple_dart_s5l8960x_read_tcr(struct apple_dart *dart, u32 sid)
 
 static void apple_dart_s5l8960x_write_tcr(struct apple_dart *dart, u32 sid, u32 val)
 {
+	unsigned long flags;
 	u32 shift, tcr;
 
 	if (WARN_ON(sid >= 4 || val > 0xff))
 		return;
 
 	shift = sid * DART_S5L8960X_TCR_BITS_PER_STREAM;
+	spin_lock_irqsave(&dart->lock, flags);
 	tcr = readl(dart->regs + dart->hw->tcr);
 	tcr &= ~(0xffU << shift);
 	tcr |= val << shift;
 	writel(tcr, dart->regs + dart->hw->tcr);
+	spin_unlock_irqrestore(&dart->lock, flags);
 }
 
 static u32 apple_dart_t8020_read_tcr(struct apple_dart *dart, u32 sid)
